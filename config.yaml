@@ -1,0 +1,5 @@
+ReverseWebsocketHost: 127.0.0.1
+ReverseWebsocketPort: 3003
+access_token: f
+gptSovitsapikey: f
+qq_number:

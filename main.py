@@ -23,6 +23,7 @@ with open('config.yaml', 'r', encoding='utf-8') as f:
 token=config["gptSovitsapikey"]
 global adapter
 exit_event = threading.Event()
+#下面都是传家宝函数
 def random_str(random_length=7, chars='AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789@$#_%'):
     """
     生成随机字符串作为验证码
@@ -297,7 +298,7 @@ async def outVits(text,speaker):
         with open(p, "wb") as f:
             f.write(r1.content)
         return p
-# 全局变量来保持对背景图像的引用
+
 background_photo = None
 
 # 读取配置文件
@@ -311,46 +312,40 @@ def save_config(data):
         yaml.dump(data, file, allow_unicode=True)
 
 def run_gui():
-    global background_photo  # 声明全局变量
+    global background_photo
 
     root = tk.Tk()
     root.title("virtual voice")
 
     def terminate_all():
-        """彻底终止所有任务和线程，确保进程退出"""
         print("正在彻底终止所有任务...")
 
-        # 1. 停止适配器或其他后台任务
         try:
             if adapter:
-                adapter.stop()  # 停止适配器连接
+                adapter.stop()
                 print("适配器已停止")
         except Exception as e:
             print(f"停止适配器时出错: {e}")
 
-        # 2. 设置退出标志，通知所有线程终止
         exit_event.set()
 
-        # 3. 停止 Tkinter 事件循环
         if root:
-            root.quit()  # 停止 Tkinter mainloop
+            root.quit()
             print("Tkinter 事件循环已停止")
 
-        # 4. 强制退出所有线程与进程
         try:
-            os._exit(0)  # 强制结束 Python 进程
+            os._exit(0)
         except Exception as e:
             print(f"强制退出时出错: {e}")
 
         # 5. 如果仍有残留，发送中断信号
         signal.raise_signal(signal.SIGTERM)
     def on_closing():
-        global adapter,gui_thread  # 声明全局变量
+        global adapter,gui_thread
         terminate_all()
 
-        # 终止程序
-        root.destroy()  # 销毁窗口
-        sys.exit(0)  # 确保 Python 程序彻底退出
+        root.destroy()
+        sys.exit(0)
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
     background_image = Image.open("bg.png")
@@ -369,16 +364,15 @@ def run_gui():
     root.mainloop()
 
 def create_main_interface(root):
-    global adapter  # 声明全局变量
-    # 清空当前界面
+    global adapter
     for widget in root.winfo_children():
         widget.destroy()
 
-    # 添加背景
+
     background_label = tk.Label(root, image=background_photo)
     background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-    # 创建标签和输入框
+
     tk.Label(root, text="说话人:", bg='white').grid(row=0, column=0, padx=10, pady=10)
     if list(GPTSOVITS_SPEAKERS)!=None:
         merged_list = modelscopeSpeakers+outVitsSpeakers+list(GPTSOVITS_SPEAKERS)
@@ -402,7 +396,7 @@ def create_main_interface(root):
 
     github_link = tk.Label(root, text="源代码", fg="blue", cursor="hand2")
     github_link.grid(row=6, columnspan=2, pady=10)
-    github_link.bind("<Button-1>", lambda e: os.startfile("https://github.com/avilliai/virtualVoice"))  # 替换为你的仓库链接
+    github_link.bind("<Button-1>", lambda e: os.startfile("https://github.com/avilliai/virtualVoice"))
 
     open_source_statement = tk.Label(root, text="本项目开源，欢迎贡献与交流！", bg='white')
     open_source_statement.grid(row=7, columnspan=2, pady=5)
@@ -436,7 +430,7 @@ def create_main_interface(root):
     send_button = tk.Button(root, text="发送", command=send_message)
     send_button.grid(row=4, columnspan=2, pady=20)
 
-    # 创建配置页面按钮
+
     config_button = tk.Button(root, text="初次使用请配置", command=lambda: show_config_page(root))
     config_button.grid(row=5, columnspan=2, pady=10)
 
@@ -445,7 +439,7 @@ def show_config_page(root):
     for widget in root.winfo_children():
         widget.destroy()
 
-    # 添加背景
+
     background_label = tk.Label(root, image=background_photo)
     background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
@@ -456,11 +450,11 @@ def show_config_page(root):
     for key, value in config_data.items():
         tk.Label(root, text=key, bg='white').pack(pady=5)
         entry = tk.Entry(root)
-        entry.insert(0, str(value))  # 填充默认值
+        entry.insert(0, str(value))
         entry.pack(pady=5)
         entries[key] = entry
 
-        # 如果配置项是 gptSovitsapikey，添加链接标签
+
         if key == "gptSovitsapikey":
             github_link = tk.Label(root, text="申请apikey", fg="blue", cursor="hand2")
             github_link.pack(pady=5)
@@ -474,40 +468,35 @@ def show_config_page(root):
     save_button = tk.Button(root, text="保存配置", command=save_config_data)
     save_button.pack(pady=20)
 
-    # 返回主界面按钮
+
     back_button = tk.Button(root, text="返回主界面", command=lambda: create_main_interface(root))
     back_button.pack(pady=10)
 
 async def backMission():
-    # 创建 EventBus 实例
+
     bus = EventBus()
     global adapter
 
-    # 初始化适配器
     adapter = ReverseWebsocketAdapter(host='127.0.0.1', port=3003, access_token='f', bus=bus)
 
-    # 启动 WebSocket 服务器
+
     adapter.start()
 
-    # 发送自定义消息
-
-    # 等待一段时间后关闭服务器
     await asyncio.sleep(10)
-    # 发送自定义消息
+
     '''await adapter.send_custom_message({"action": "send_group_msg", "params": {"group_id": 879886836, "message": [
         {"type": "record",
          "data": {"file": "file:///D:/python/virtualVoice/test.wav", "url": "", "cache": True, "proxy": True,
                   "timeout": 30}}], "auto_escape": True}, "echo": "7f04cc0e047f6f9ed13fe495ecb468de"}
                                       )  # 根据需要修改消息内容'''
 
-    # 等待一段时间后关闭服务器
     await asyncio.Event().wait()
 
-# 启动界面线程
+
 gui_thread = threading.Thread(target=run_gui)
 gui_thread.start()
 
-# 启动后台任务
+
 asyncio.run(backMission())
 
 

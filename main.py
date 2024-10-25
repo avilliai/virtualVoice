@@ -1,6 +1,8 @@
 import asyncio
 import os
 import random
+import signal
+import sys
 import tkinter as tk
 from pathlib import Path
 from tkinter import ttk
@@ -20,6 +22,7 @@ with open('config.yaml', 'r', encoding='utf-8') as f:
     config = yaml.load(f.read(), Loader=yaml.FullLoader)
 token=config["gptSovitsapikey"]
 global adapter
+exit_event = threading.Event()
 def random_str(random_length=7, chars='AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789@$#_%'):
     """
     生成随机字符串作为验证码
@@ -312,6 +315,43 @@ def run_gui():
 
     root = tk.Tk()
     root.title("virtual voice")
+
+    def terminate_all():
+        """彻底终止所有任务和线程，确保进程退出"""
+        print("正在彻底终止所有任务...")
+
+        # 1. 停止适配器或其他后台任务
+        try:
+            if adapter:
+                adapter.stop()  # 停止适配器连接
+                print("适配器已停止")
+        except Exception as e:
+            print(f"停止适配器时出错: {e}")
+
+        # 2. 设置退出标志，通知所有线程终止
+        exit_event.set()
+
+        # 3. 停止 Tkinter 事件循环
+        if root:
+            root.quit()  # 停止 Tkinter mainloop
+            print("Tkinter 事件循环已停止")
+
+        # 4. 强制退出所有线程与进程
+        try:
+            os._exit(0)  # 强制结束 Python 进程
+        except Exception as e:
+            print(f"强制退出时出错: {e}")
+
+        # 5. 如果仍有残留，发送中断信号
+        signal.raise_signal(signal.SIGTERM)
+    def on_closing():
+        global adapter,gui_thread  # 声明全局变量
+        terminate_all()
+
+        # 终止程序
+        root.destroy()  # 销毁窗口
+        sys.exit(0)  # 确保 Python 程序彻底退出
+    root.protocol("WM_DELETE_WINDOW", on_closing)
 
     background_image = Image.open("bg.png")
     window_width = background_image.width // 5

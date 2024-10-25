@@ -1,5 +1,5 @@
 ReverseWebsocketHost: 127.0.0.1
-ReverseWebsocketPort: 3003
+ReverseWebsocketPort: '3003'
 access_token: f
-gptSovitsapikey: f
-qq_number:
+gptSovitsapikey: 把令牌/apikey填在这里
+qq_number: 填扫码登陆的QQ

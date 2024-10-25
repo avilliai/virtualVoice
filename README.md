@@ -7,6 +7,7 @@
 部署好llob后，进入设置，目前是长这样<br>
 <img src="https://raw.githubusercontent.com/avilliai/imgBed/master/images/20241025211513.png" width="500px"><br>
 > ws://127.0.0.1:3003<br>
+
 <img src="https://raw.githubusercontent.com/avilliai/imgBed/master/images/269dc8695a667f7fbfe6c3b30ea80659.jpeg" width="500px"><br>
 **byd别忘了往下滑，点保存**。<br>
 重启qq，至此完成llob部分配置

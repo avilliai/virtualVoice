@@ -360,7 +360,12 @@ def create_main_interface(root):
     group_id_entry = tk.Entry(root)
     group_id_entry.grid(row=3, column=1, padx=10, pady=10)
 
+    github_link = tk.Label(root, text="源代码", fg="blue", cursor="hand2")
+    github_link.grid(row=6, columnspan=2, pady=10)
+    github_link.bind("<Button-1>", lambda e: os.startfile("https://github.com/avilliai/virtualVoice"))  # 替换为你的仓库链接
 
+    open_source_statement = tk.Label(root, text="本项目开源，欢迎贡献与交流！", bg='white')
+    open_source_statement.grid(row=7, columnspan=2, pady=5)
 
     def send_message():
         def run_async():
@@ -414,6 +419,12 @@ def show_config_page(root):
         entry.insert(0, str(value))  # 填充默认值
         entry.pack(pady=5)
         entries[key] = entry
+
+        # 如果配置项是 gptSovitsapikey，添加链接标签
+        if key == "gptSovitsapikey":
+            github_link = tk.Label(root, text="申请apikey", fg="blue", cursor="hand2")
+            github_link.pack(pady=5)
+            github_link.bind("<Button-1>", lambda e: os.startfile("https://getkey.acgnai.top/"))  # 替换为你的仓库链接
 
     def save_config_data():
         data_to_save = {key: entry.get() for key, entry in entries.items()}
